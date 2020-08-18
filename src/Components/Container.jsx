@@ -8,6 +8,7 @@ class Container extends React.Component {
   state = {
     employees: [],
     search: "",
+    filteredEmployees: [],
   };
   componentDidMount() {
     Api.search()
@@ -20,28 +21,53 @@ class Container extends React.Component {
             name: dataRow.name.first + " " + dataRow.name.last,
             phone: dataRow.phone,
             email: dataRow.email,
-            dob: dataRow.dob.date,
+            dob: dataRow.dob.date.substring(0,10),
           };
         });
-        this.setState({ employees: employeeData });
+        this.setState({
+          employees: employeeData,
+          filteredEmployees: employeeData,
+        });
         console.log(this.state.employees);
       })
       .catch((err) => {
         console.log("Error", err);
       });
   }
-  searchChange = event => {
-    this.setState({search: event.target.value});
-  }
+  searchChange = (event) => {
+    let searchTerm = event.target.value.toLowerCase()
+    
+    if (searchTerm === "") {
+        this.setState({
+          filteredEmployees: this.state.employees,
+          search: ""
+        });
+      } else {
+        let searchedEmployees = this.state.employees.filter((emp) => {
+          return (emp.name.toLowerCase().includes(searchTerm, 0) || 
+          emp.phone.replace(' ','').replace('-','').includes(searchTerm, 0) ||
+          emp.email.toLowerCase().includes(searchTerm, 0) ||
+          emp.dob.replace(' ','').includes(searchTerm, 0)
+          );
+        });
+        this.setState({
+            filteredEmployees: searchedEmployees,
+            search: searchTerm
+        });
+      }
+  };
+
   render() {
     return (
       <div className="container">
         <div className="wrapper">
-          <Searchbar search={this.state.search} searchChange={this.searchChange}/>
+          <Searchbar
+            search={this.state.search}
+            searchChange={this.searchChange}
+          />
           <p>{this.state.search}</p>
           <Table>
-            {this.state.employees ? (
-              this.state.employees.map((emp) => (
+              {this.state.filteredEmployees.map((emp) => (
                 <tr className="userData" key={emp.id}>
                   <td>
                     <img src={emp.image} alt="" />
@@ -51,16 +77,7 @@ class Container extends React.Component {
                   <td>{emp.email}</td>
                   <td>{emp.dob}</td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-              </tr>
-            )}
+              ))}
           </Table>
         </div>
       </div>
