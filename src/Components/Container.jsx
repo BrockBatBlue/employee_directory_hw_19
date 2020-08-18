@@ -12,8 +12,10 @@ class Container extends React.Component {
     componentDidMount(){
         Api.search()
         .then((data)=>{
+            // console.log(data.data.results);
             let employeeData = data.data.results.map((dataRow) => {
                 return({
+                    id: dataRow.login.uuid,
                     image: dataRow.picture.thumbnail,
                     name: dataRow.name.first + " " + dataRow.name.last,
                     phone: dataRow.phone,
@@ -35,7 +37,7 @@ class Container extends React.Component {
                     <Table>
                         {this.state.employees ? (
                             this.state.employees.map(emp => (
-                                <tr>
+                                <tr className="userData" key={emp.id}>
                                     <td>
                                         <img src={emp.image} alt=""/>
                                     </td>
